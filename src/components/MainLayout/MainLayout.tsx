@@ -37,6 +37,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           color="textSecondary"
           component="p"
         >
+          <h1>This is changes for lesson 2 - Serving frontend application</h1>
           Thank you for your purchase!
         </Typography>
         <Copyright />
