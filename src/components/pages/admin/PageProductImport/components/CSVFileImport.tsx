@@ -1,6 +1,7 @@
 import React from "react";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import axios from "axios";
 
 type CSVFileImportProps = {
   url: string;
@@ -23,24 +24,38 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
   };
 
   const uploadFile = async () => {
-    console.log("uploadFile to", url);
+    if (!file) return;
 
-    // Get the presigned URL
-    // const response = await axios({
-    //   method: "GET",
-    //   url,
-    //   params: {
-    //     name: encodeURIComponent(file.name),
-    //   },
-    // });
-    // console.log("File to upload: ", file.name);
-    // console.log("Uploading to: ", response.data);
-    // const result = await fetch(response.data, {
-    //   method: "PUT",
-    //   body: file,
-    // });
-    // console.log("Result: ", result);
-    // setFile("");
+    console.log("uploadFile to", url);
+    console.log("File to upload:", file.name, file.type);
+
+    const { data } = await axios.get(url, {
+      params: {
+        name: file.name,
+        contentType: file.type || "text/csv",
+      },
+    });
+
+    const uploadUrl: string = data.url;
+    const requiredHeaders: Record<string, string> = data.requiredHeaders || {};
+
+    console.log("Uploading to:", uploadUrl, "headers:", requiredHeaders);
+
+    const res = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        ...(requiredHeaders || {}),
+      },
+      body: file,
+    });
+
+    console.log("Result:", res.status, res.statusText);
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Upload failed: ${res.status} ${res.statusText} ${text}`);
+    }
+
+    setFile(undefined);
   };
   return (
     <Box>
